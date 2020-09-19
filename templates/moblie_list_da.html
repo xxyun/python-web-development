@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<!-- 这个会出现跨域问题 -->
+<html>
+
+
+    <head>
+        <meta charset="utf-8">
+        <title></title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.6/semantic.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/css/materialize.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.css" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.28/vue.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/reqwest/2.0.5/reqwest.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/2.1.3/js.cookie.js"></script>
+        <style media="screen">
+            .ui.fluid.card {
+                margin: 5px 0;
+                border-radius:none;
+                box-shadow: none
+            }
+
+            #button {
+                z-index: 999;
+                position: fixed;left:80%;top:90%;
+            }
+            .ui.fixed.something.menu {
+                position: fixed;top:50px;
+            }
+        </style>
+    </head>
+    {% verbatim %}
+    <body id="app">
+        <div v-show="showMenu" transition="menu" class="ui animated fixed fluid vertical something menu " >
+            <a v-on:click="chozen = 'all'" class="item">All</a>
+
+            <a class="item">Popular</a>
+
+            <a v-on:click="chozen = 'editors_choice' " class="item">Editor</a>
+        </div>
+
+
+        <div class="ui fixed inverted red borderless menu">
+            <div v-on:click="showMenu = !showMenu" class="header item">
+                <i class="icon tiny ellipsis vertical"></i>
+                Bloger
+            </div>
+
+            <div class="right menu">
+                <div class="item">
+                    <button class="ui tiny inverted circular button" type="button" name="">Login</button>
+                </div>
+            </div>
+
+        </div>
+        <!-- v-if="!opps" -->
+        <div class="ui cards"  >
+
+            <div v-for="vid in filtered" class="ui fluid card" >
+                <div class="content">
+                    <h4 class="header"> {{ vid.headline }} </h4>
+                    <div class="left floated meta">{{ vid.content|limitBy 30 }}</div>
+                </div>
+                <div class="image">
+                    <img :src="vid.cover" style="height:200px; object-fit: cover;">
+                </div>
+                <div class="extra content">
+                    <span class="right floated">
+                      <i class="heart outline like icon"></i>
+
+                    </span>
+                    <i class="comment outline icon"></i> 3
+                </div>
+
+                <div class="ui divider"></div>
+            </div>
+
+        </div>
+
+        <button id="button" class="btn-floating btn-large red" type="button" name="button">
+            <i class="icon small pencil"></i>
+        </button>
+
+        <script>
+            vm = new Vue({
+                el:"#app",
+                data:{
+                    showMenu:false,
+                    chozen:'all',
+                    vids:[]
+                },
+                methods:{
+                    getData:function () {
+                        var self = this;
+                        reqwest({
+                            url:'http://127.0.0.1:9000/api/art/',
+                            // 这里请换成自己的端口，一般是8000
+                            type:'json',
+                            success:function (resp) {
+                                self.vids = resp
+                            },
+
+                        })
+                    }
+                },
+                computed:{
+                    filtered:function () {
+                        var self = this
+                        if (self.chozen == 'editors_choice') {
+                            var newList =self.vids.filter(function (vid) {
+                                    return vid.editors_choice == true
+                                })
+                            return newList
+                        } else {
+                            return self.vids
+                        }
+
+                    }
+                },
+                transitions:{
+                    menu:{
+                        enterClass:'bounceInDown',
+                        leaveClass:'bounceOutUp'
+                    }
+                },
+
+                ready:function () {
+                    this.getData()
+                }
+            })
+        </script>
+    </body>
+    {% endverbatim %}
+</html>

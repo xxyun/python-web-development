@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>first web</title>
+        <link rel="stylesheet" href="{% static 'dist/semantic.css' %}"  media="screen" title="no title" charset="utf-8">
+        <link href="https://fonts.googleapis.com/css?family=Oswald|Raleway" rel="stylesheet">
+        <link href="{% static 'dist/components/UI-dropdown/dropdown.css' %}" rel="stylesheet">
+        <script src="{%static 'dist/library/jquery.min.js'%}"></script>
+        <script src="{%static 'dist/semantic.js'%}"></script>
+        
+
+        <script>
+        $(document)
+          .ready(function() {
+            $('.ui.selection.dropdown').dropdown();
+            $('.ui.menu .ui.dropdown').dropdown({
+              on: 'hover'
+            });
+          })
+        ;
+        </script>
+
+
+        <style type="text/css">
+            h1 {
+                font-family:'Oswald', sans-serif!important;
+                font-size:40px;
+            }
+
+            body {
+                font-family: 'Raleway', sans-serif;
+            }
+            p {
+                font-family: 'Raleway', sans-serif;
+                font-size:18px;
+            }
+            .ui.vertical.segment.masthead {
+                height: 300px;
+                background: url({% static 'images/star_banner.jpg' %});
+                background-size: cover;
+                background-position: 100% 80%;
+            }
+
+            .ui.container.segment {
+                width: 800px;
+            }
+
+            .ui.center.aligned.header.blogslogon {
+                margin-top: 40px;
+            }
+
+            .ui.center.aligned.header.blogslogon p {
+                margin-top: 10px;
+                color: white;
+                font-size: 10px;
+            }
+            .ui.container.nav {
+                width: 500px;
+            }
+
+        </style>
+    </head>
+    <body>
+        <div class="ui inverted vertical  segment masthead">
+
+            <h1 class="ui center aligned header blogslogon" style="font-size:50px;font-family: 'Raleway', sans-serif!important;">
+                Bloger
+                <p class="ui sub  header">
+                    everyone has a story to tell
+                </p>
+
+            </h1>
+        </div>
+
+        <!-- <div class="ui  inverted teal vertical very padded segment">
+               <h1 class="ui center aligned header"> Time will tell</h1>
+        </div> -->
+
+        <div class="ui  container nav">
+            <div class="ui borderless text three item menu ">
+
+
+                <div class="ui pointing dropdown  item">
+                  <div class=" text">Categories</div>
+                  <i class="ui  dropdown icon "></i>
+                  <div class="menu">
+                    <a
+                     class="item" href="?tag=tech">Tech</a>
+                    <a
+                     class="item" href="?tag=life">Life</a>
+                     <a
+                      class="item" href="?tag=">首页</a>
+                  </div>
+                </div>
+
+
+
+                <a class= "item" href="{%  url 'list' %}popular">
+                    Popular
+                  </a>
+
+
+
+
+
+                <a class="item" href="{%  url 'fweb' %}">
+                    About
+                </a>
+
+            </div>
+        </div>
+
+
+        <div class="ui divider"></div>
+
+
+
+        <div class="ui  vertical segment">
+
+            {% for article in article_list %}
+            <!-- 增加模版的for循环，从而支持无数篇文章都能用管理后台的数据 -->
+                <div class="ui container vertical segment">
+                  <!-- 下面一行是向url层传递“url：detail/{所点击的文章id号}”这样的格式 -->
+
+                    <a href="{% url 'detail' article.id %}">
+                           <h1 class="ui header">
+                                 {{ article.headline }}
+                            </h1>
+                     </a>
+
+                    <i class="icon angle double right"></i>
+                    <span style="color:#bbbbbb">1000,00 </span>
+
+                    <p>
+                        {{ article.content|truncatewords:100 }}
+                        <a href="{% url 'detail' article.id %}">
+                            <i class="angle tiny double grey right icon">READMORE</i>
+                        </a>
+                    </p>
+
+
+
+                    <!-- <p>
+                        {{ article.content|truncatewords:50 }} -->
+                        <!-- 让文章的前50个字显示出来
+                        <a href="{% url 'detail' article.id %}">
+                            <i class="angle tiny double grey right icon">READMORE</i>
+                        </a>
+                    </p> -->
+
+                    <div class="ui mini  tag label">
+                        {{ article.tag }}
+                        <!-- 调用文章标签 -->
+                    </div>
+                    </div>
+
+                <!-- 结束循环 -->
+            {% endfor %}
+            </div>
+
+
+
+        <!-- 翻页按键 -->
+    <div class="ui center aligned very padded vertical segment container">
+        <div class="ui pagination menu">
+            {% if article_list.has_previous %}
+                <a href="?page={{ article_list.previous_page_number }}" class="item">
+                    <i class="icon red left arrow"></i>
+                </a>
+            {% else %}
+                <a href="?page={{ article_list.start_index }}" class="disabled item">
+                    <i class="icon  left arrow"></i>
+                </a>
+            {% endif %}
+
+            {% if  article_list.has_next %}
+                <a href="?page={{ article_list.next_page_number }}" class="item">
+                    <i class="icon red right arrow"></i>
+                </a>
+
+            {% else %}
+
+                <a href="?page={{ article_list.end_index }}" class="disabled item">
+                    <i class="icon  right arrow"></i>
+                </a>
+            {% endif %}
+
+        </div>
+        </div>
+
+
+
+
+        <div class="ui inverted  vertical   segment  basic  ">
+
+          <div class="">
+            <h3>通信创新®</h3>
+          </div>
+
+
+
+          <div class="right menu">
+              {% if request.user.is_authenticated %}
+                  <div class="item">
+                      <h5 class="ui inverted header">
+                          <span style="margin-right:20px;">{{ request.user.username }}</span>
+                          <div class="ui mini circular image">
+                              {% if request.user.profile.profile_image %}
+                                  <img src="/upload/{{ request.user.profile.profile_image }}" alt="" />
+                              {% else %}
+                                  <img src="/upload/profile_image/elyse.png" alt="" />
+                              {% endif %}
+
+
+                          </div>
+                      </h5>
+                  </div>
+                  <div class="item">
+                      <a href="{% url 'logout' %}" class="ui inverted circular button">Logout</a>
+                  </div>
+
+              {% else %}
+
+                  <div class="item">
+                      <h5 class="ui inverted header">
+                          <span style="margin-right:20px;">{{ request.user.username }}</span>
+                          <div class="ui mini circular image">
+                              <img src="/upload/profile_image/elyse.png" alt="" />
+                          </div>
+                      </h5>
+                  </div>
+                  <div class="item">
+                    <!-- 链接到name=login的url -->
+                      <a href="{%  url 'login' %}" class="ui inverted circular button">Signup/Login</a>
+                  </div>
+              {% endif %}
+
+
+          </div>
+
+
+
+
+
+      </div>
+    </body>
+</html>

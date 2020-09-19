@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<!-- 这个不会出现跨域问题 -->
+{% load staticfiles %}
+
+<html>
+
+
+    <head>
+        <meta charset="utf-8">
+        <title></title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.6/semantic.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/css/materialize.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.css" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.28/vue.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/reqwest/2.0.5/reqwest.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/2.1.3/js.cookie.js"></script>
+
+        <style media="screen">
+            .ui.fluid.card {
+                margin: 5px 0;
+                border-radius:none;
+                box-shadow: none
+            }
+            .ui.cards{
+                margin-top:50px;
+            }
+            #button {
+                z-index: 999;
+                position: fixed;left:80%;top:90%;
+            }
+            .ui.fixed.something.menu {
+                position: fixed;top:50px;
+            }
+            .unscrollable{
+                height:100%;
+                overflow:hidden;
+            }
+            .ui.padded.modal.active {
+                transform: translate(0, -50%);
+            }
+            .ui.vertical.inverted.background.segment {
+                height: 260px;
+                background-size: cover;
+
+            }
+
+            .shortcut.buttons{
+                position: absolute;top:15px;left:15px;
+            }
+
+
+        </style>
+    </head>
+    {% verbatim %}
+    <body id="app" class="dimmable {{ canScroll }} ">
+        <div v-show="showMenu" transition="menu" class="ui animated fixed fluid vertical something menu " >
+            <a v-on:click="chozen = 'all'" class="item">All</a>
+
+            <a class="item">Popular</a>
+
+            <a v-on:click="chozen = 'editors_choice' " class="item">Editor</a>
+
+            <a v-on:click="editorMode = !editorMode" class="inverted item"> editorMode </a>
+        </div>
+
+
+        <div  class="ui fixed inverted red borderless menu">
+            <div  v-on:click="showMenu = !showMenu" class="header item">
+                <i class="icon tiny ellipsis vertical"></i>
+                Bloger
+            </div>
+            <div class="right menu">
+                <div class="item">
+                    <button class="ui tiny inverted circular button" type="button" name="">Login</button>
+                </div>
+            </div>
+
+        </div>
+
+        <div v-show="modal.show" class="ui dimmer animated {{ fadeInOut }} active"   >
+            <div class="ui padded  modal {{ loadingOrNot }} segment active">
+                <!-- 调用属性 -->
+                <h3 class="ui header">{{ showMsg }}</h3>
+                <i v-on:click="modalSwitch" class="icon tiny close" ></i>
+
+                <div class="content">
+                    <form >
+                        <div class="field">
+                            <label>this</label>
+                            <input v-model="modal.title" type="text" placeholder="title here">
+                        </div>
+                        <div class="field">
+                            <input v-model="modal.url" type="url" placeholder="cover url">
+                        </div>
+                        <div class="field">
+                            <input v-model="modal.content" type="text" placeholder="write somthing">
+                        </div>
+                    </form>
+
+                </div>
+                <div v-on:click="sendData" class="ui fluid positive  button" >Submit</div>
+            </div>
+
+        </div>
+        <!-- v-if="!opps" -->
+        <div class="ui cards"  >
+
+            <div v-for="vid in filtered" class="ui fluid card">
+                <div class="content">
+                    <h4 class="header"> {{ vid.headline }} </h4>
+                    <div class="left floated meta">{{ vid.content|limitBy 30 }} </div>
+                </div>
+
+                <div class="image">
+
+                    <div v-show="editorMode"  class="shortcut buttons">
+                        <i v-on:click="editorsChoice(vid)" class="bordered inverted grey icon thumbs outline up"></i>
+                        <i v-on:click="deleteCard(vid)" class="bordered inverted grey icon close"></i>
+                    </div>
+
+                    <img :src="vid.cover" style="height:200px;object-fit: cover;">
+                </div>
+
+                <div class="extra content">
+
+                    <span v-show="vid.editors_choice" class="left floated">
+                        Ediotr's
+                        <i class="icon thumbs outline up"></i>
+                    </span>
+                </div>
+
+                <div class="ui divider"></div>
+
+            </div>
+
+
+
+
+        </div>
+
+        <button id="button" v-on:click="modalSwitch" class="btn-floating btn-large red" type="button" >
+            <i class="icon small pencil" ></i>
+        </button>
+
+        <script>
+            vm = new Vue({
+                el:"#app",
+                data:{
+                    modal:{
+                        show:false,
+                        isLoading:false,
+                        title:'',
+                        url:'',
+                        content:'',
+                        msg:''
+                    },
+                    // 妈的这里要变成一个对象
+                    showMenu:false,
+                    chozen:'all',
+                    editorMode:false,
+                    vids:[],
+                },
+                methods:{
+                    modalSwitch:function () {
+                        this.modal.show = !this.modal.show
+                    },
+                    editorsChoice:function (vid) {
+                        var self = this;
+                        var id = vid.id
+                        reqwest({
+                            url:'/api/art/' + id,
+                            type:'json',
+                            method:'put',
+                            data:{
+                                editors_choice:true,
+                                title:vid.title,
+                                content:vid.content,
+                                url_image:vid.url_image,
+                            },
+                            success:function (resp) {
+                                console.log(resp);
+                                self.getData()
+                            },
+
+                        })
+                    },
+                    deleteCard:function (vid) {
+                        var self = this;
+                        var id = vid.id
+                        reqwest({
+                            url:'/api/art/' + id,
+                            type:'json',
+                            method:'delete',
+                            success:function (resp) {
+                                console.log(resp);
+                                self.getData()
+                            },
+
+                        })
+                    },
+                    getData:function () {
+                        var self = this;
+                        reqwest({
+                            url:'http://127.0.0.1:8000/api/art/',
+                            type:'json',
+                            success:function (resp) {
+                                console.log(resp);
+                                self.vids = resp
+                            },
+
+                        })
+                    },
+                    // 这里是移动端页面提交表单功能
+                    sendData:function () {
+                        var self = this;
+                        self.modal.isLoading = !self.modal.isLoading
+                        // 使 segment 变成加载状态
+                        reqwest({
+                            url:'http://127.0.0.1:8000/api/art/',
+                            method:'post',
+                            type:'json',
+                            data:{
+                                title:self.modal.title,
+                                url_image:self.modal.url,
+                                content:self.modal.content
+                            },
+                            // 如果成功的话就向http://127.0.0.1:8000/api/art/这个写好的api添加新的json形式数据
+                            // 然后调用getData方法重新刷新下页面
+                            success:function (resp) {
+                                // 把返回对象家在近console里，这样你就可以在检查器的控制台查看信息，modal就是弹窗，
+                                // modal.msg就是弹窗显示错误码
+                                console.log(resp);
+                                self.modal.isLoading = !self.modal.isLoading
+                                // 如果取回数据成功在把加载状态切换回来
+                                self.modal.msg = resp.status
+                                self.modalSwitch()
+                                // 关闭弹窗
+                                self.getData()
+                            },
+                            // 失败的话就把错误码写进modal.msg里
+                            error:function (err) {
+                                console.log(err);
+                                self.modal.msg = err.status
+                                self.modal.isLoading = !self.modal.isLoading
+
+                            }
+
+                        })
+                    }
+                },
+                // 属性
+                computed:{
+                    filtered:function () {
+                        var self = this
+                        if (self.chozen == 'editors_choice') {
+                            var newList =self.vids.filter(function (vid) {
+                                    return vid.editors_choice == true
+                                })
+                            return newList
+                        } else {
+                            return self.vids
+                        }
+                    },
+                    canScroll:function () {
+                        if (this.modal.show) {
+                            return 'unscrollable'
+                        } else {
+                            return ''
+                        }
+                    },
+                    fadeInOut:function () {
+                        if (this.modal.show) {
+                            return ' fadeIn'
+                        } else {
+                            return ' fadeOut'
+                        }
+                    },
+                    loadingOrNot:function () {
+                        if (this.modal.isLoading) {
+                            return 'loading'
+                        } else {
+                            return ''
+                        }
+                    },
+                    // 这里对应上面的sendData方法的错误解决方式，把错误码存进这个showMsg属性里，如果出错了代码第81行就会
+                    // 调用这个属性并把它显示出来
+                    showMsg:function () {
+                        if (this.modal.msg == '201') {
+                            return 'SUCCESS'
+                        } else if (this.modal.msg == '400') {
+                            return 'SOMETHING WRONG'
+                        } else {
+                            return 'Create a post'
+                        }
+                    }
+                },
+                transitions:{
+                    menu:{
+                        enterClass:'bounceInDown',
+                        leaveClass:'bounceOutUp'
+                    },
+
+                },
+
+                ready:function () {
+                    this.getData()
+                }
+            })
+        </script>
+    </body>
+    {% endverbatim %}
+</html>

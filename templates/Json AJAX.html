@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title></title>
+        <script type="text/javascript" src="{% static 'js/vue1.js' %}"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/reqwest/2.0.5/reqwest.js"></script>
+        <link rel="stylesheet" href="{% static 'dist/semantic.css' %}" media="screen" title="no title" charset="utf-8">
+        <link rel="stylesheet" href="{% static 'dist/animate.css' %}" media="screen" title="no title">
+        <link href="https://fonts.googleapis.com/css?family=Oswald|Raleway" rel="stylesheet">
+
+
+    </head>
+    <body id="app">
+        <style type="text/css">
+            .ui.segment.container {
+                width:700px;
+            }
+            h1 {
+                font-family:'Oswald', sans-serif;font-size:40px!important;
+            }
+
+            p {
+                font-family: 'Raleway', sans-serif;
+                font-size:{{ article.fontSize }}px;
+            }
+
+            body {
+                background:url({% static 'images/star_banner.jpg' %});
+                background-size:cover;
+                background-repeat:no-repeat;
+                background-attachment:fixed
+            }
+
+        </style>
+
+        <div class="ui dimmer fadeIn active" v-if="!modal.show" v-on:click="modalSwitch">
+            <div class="ui modal active">
+                <h3 class="ui header">This is a header!</h3>
+            </div>
+        </div>
+
+        <div class="ui  segment padded container" >
+            <button v-on:click="article.fontSize+=5" class="ui top left attached label" type="button" name="button">
+                +
+            </button>
+            <h1 class="ui header">
+                {{ article.title }}
+                {{ article.fontSize }}
+
+            </h1>
+            <p>
+                {{ article.content }}
+            </p>
+
+            <button v-on:click="modalSwitch" class="ui inverted blue button" type="button" name="button">Suscraibe Me</button>
+        </div>
+
+        <!-- Comments&Form's here -->
+        <div class="ui segment container" style="width:700px;">
+            <h3 class="ui header" style="font-family:'Oswald', sans-serif;">Comments</h3>
+            <div v-for="comment in comments" class="ui comments">
+                <div class="comment" >
+                    <div class="avatar">
+                        <img src="images/matt.jpg" alt="" />
+                    </div>
+                    <div class="content">
+                        <a href="#" class="author">{{ comment.name }}</a>
+
+                        <p class="text" style="font-family: 'Raleway', sans-serif;">
+                            My height is {{ comment.height }} cm
+                        </p>
+
+
+                    </div>
+                </div>
+
+
+
+            </div>
+            <div class="ui divider"></div>
+            <!-- 你还可以输入。。。 -->
+            <form class="ui form" action="index.html" method="post">
+                <input v-model="message" type="text">
+            </form>
+        </div>
+
+        <script>
+            var vm = new Vue({
+                el:"#app",
+                // context
+                data:{
+
+                    modal:{
+                        show:true,
+                    },
+                    // context["article"] = article
+                    article:{
+                        title:"This is a title",
+                        content:"Hi there!",
+                        fontSize:18
+                    },
+                    comments:[
+                        // {name:"John Doe",said:"Great!",show:true},
+                        // {name:"John Doe",said:"Great!",show:true},
+                        // {name:"John Doe",said:"Great!",show:true},
+                        // {name:"John Doe",said:"Great!",show:true},
+                    ]
+                },
+                methods:{
+                    modalSwitch:function () {
+                        this.modal.show = !this.modal.show
+
+                    },
+                    getData:function () {
+                        var self = this;
+                        reqwest({
+                            url:"http://swapi.co/api/people/?format=json",
+                            type:"json",
+                            method:"get",
+                            success:function (resp) {
+                              // 这里不是this.comments的原因是防止发生“函数中的函数”错误，因为getData和reqwest都是函数，所以this不是原来的
+                              // this了，所以定义个self=this，这是个坑
+                                self.comments = resp.results
+                            }
+                        })
+                    }
+                },
+                ready:function () {
+                    this.getData()
+                }
+            })
+        </script>
+
+    </body>
+</html>

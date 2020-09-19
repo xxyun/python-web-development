@@ -1,0 +1,296 @@
+<!-- 表单网页 -->
+<!DOCTYPE html>
+<!-- 模版标签 -->
+{% load staticfiles %}
+
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title></title>
+        <link rel="stylesheet" href="{% static 'dist/semantic.css' %}" media="screen" title="no title" charset="utf-8">
+        <link href="https://fonts.googleapis.com/css?family=Oswald|Raleway" rel="stylesheet">
+        <!-- 引用vue1 -->
+        <script type="text/javascript" src="js/vue1.js"></script>
+        <!-- 引用animate的css裤 -->
+        <link rel="stylesheet" href="{% static 'dist/animate.css' %}" media="screen" title="no title">
+
+
+
+    </head>
+    <!-- 这里给body命名为app，下面vue靠着id名来控制该控制的地方 -->
+
+
+    <body id=app>
+      <!-- 要把style标签移动到body下，这样对style的改动才会被vue接收到，因为设置是vue管着id=app的区域的 -->
+        <style type="text/css">
+            .ui.segment.container {
+                width:700px;
+            }
+            h1 {
+                font-family:'Oswald', sans-serif;font-size:40px!important;
+            }
+
+            p {
+                font-family: 'Raleway', sans-serif;
+                font-size:{{article.fontSize}}px;
+            }
+
+          body {
+/* {% static 'images/star_banner.jpg'%}意思是调用图像，必须按照这样的格式  */
+              background:url({% static 'images/star_banner.jpg' %});
+              background-size:cover;
+              background-repeat:no-repeat;
+              background-attachment:fixed
+          }
+
+      </style>
+
+
+
+
+        <div class="ui image">
+            <img src="" alt="" />
+        </div>
+        <div class="ui  segment padded container" >
+          <button v-on:click="article.fontSize+=3" class="ui top left attached label" type="button" name="button">
+    +
+</button>
+            <h1 class="ui header">
+                {{ article.headline }}
+            </h1>
+            <i class="icon red checkmark"></i>
+            <span style="color:#bbbbbb">{{like_counts}}got it </span>
+            <p>
+              <div class="image" >
+                {% if article.cover %}
+                <div class="ui vertical basic segment">
+            <div class="ui grid">
+                <div class="six wide column">
+                    <div class="ui image">
+                    <img src="/upload/{{ article.cover }}" alt=""  >
+                    </div>
+                </div>
+                <div class="ten wide column">
+
+                    <p>
+                      {{ article.content }}
+                    </p>
+                </div>
+
+
+
+                {% else %}
+                <div class="sixteen wide column">
+                    <p >
+                      {{ article.content }}
+                    </p>
+                  </div>
+
+
+                    </div>
+
+                    </div>
+                {% endif %}
+
+              </div>
+                <!-- {{ article.content }} -->
+            </p>
+        </div>
+
+<!-- 点赞投票部分 -->
+        <div class="ui  segment padded container" >
+        <!-- <div class="ui divider   "></div> -->
+        <form class="ui form" action="{% url 'vote' vid_info.id %}" method="post">
+          {% csrf_token %}
+
+              {% if user_ticket.choice == 'like'  %}
+                  <button class="ui red tiny button  " type="submit" name="vote" value="normal" >
+                      <i class="icon checkmark"></i>
+                      Get it!
+                  </button>
+
+                  <button class="ui  tiny button" type="submit" name="vote" value="dislike" >
+                      <i class="icon bomb"></i>
+                      Hmmm...
+                  </button>
+
+              {% elif user_ticket.choice == 'dislike' %}
+
+                  <button class="ui tiny button" type="submit" name="vote" value="like" >
+                      <i class="icon checkmark"></i>
+                      Get it!
+                  </button>
+
+                  <button class="ui red tiny button" type="submit" name="vote" value="normal" >
+                      <i class="icon bomb"></i>
+                      Hmmm...
+                  </button>
+
+              {% else %}
+                  <button class="ui  tiny button" type="submit" name="vote" value="like" >
+                      <i class="icon checkmark"></i>
+                      Get it!
+                  </button>
+
+                  <button class="ui  tiny button" type="submit" name="vote" value="dislike" >
+                      <i class="icon bomb"></i>
+                      Hmmm...
+                  </button>
+
+              {% endif %}
+
+
+
+
+              <button class="ui secondary circular tiny right floated pin icon button ">
+                  <i class="pin icon "></i>
+                  Saved
+              </button>
+
+
+        </form>
+
+        </div>
+
+
+
+
+        <!-- Comments&Form's here -->
+        <div class="ui segment container" style="width:700px;">
+            <h3 class="ui header" style="font-family:'Oswald', sans-serif;">Comments</h3>
+            <div class="ui comments">
+                {% if best_comment %}
+                    <div class="ui mini red left ribbon label">
+                        <i class="fire icon"></i>
+                        BEST
+                    </div>
+                    <div class="best comment">
+                        <div class="avatar">
+                            <img src="http://semantic-ui.com/images/avatar/small/matt.jpg"  alt="" />
+                        </div>
+                        <div class="content">
+                            <a href="#" class="author">{{ best_comment.name }}</a>
+                            <div class="metadata">
+                                <div class="date">2 days ago</div>
+                            </div>
+                            <p class="text" style="font-family: 'Raleway', sans-serif;">
+                                {{ best_comment.comment }}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="ui divider"></div>
+                {% endif %}
+
+
+
+
+
+                {% for comment in article.under_comments.all %}
+                    <div class="comment">
+                        <div class="avatar">
+                            <img src="http://semantic-ui.com/images/avatar/small/matt.jpg"  alt="" />
+                        </div>
+                        <div class="content">
+                            <a href="#" class="author">{{ comment.name }}</a>
+                            <div class="metadata">
+                                <div class="date">2 days ago</div>
+                            </div>
+                            <p class="text" style="font-family: 'Raleway', sans-serif;">
+                                {{ comment.comment }}
+                            </p>
+                        </div>
+                    </div>
+                {% endfor %}
+
+
+<!-- 视图，表单分离 -->
+            </div>
+            <div class="ui divider"></div>
+            <!-- action="{% url 'comment' article.id %}"的意思是用url标签向'comment'传送，并且带上article.id给view层。 -->
+            <form class="ui error tiny form" action="{% url 'comment' article.id %}" method="post">
+                {% if form.errors %}
+                    <div class="ui error message">
+                        {{ form.errors }}
+                    </div>
+                    {% for field in form  %}
+                        <div class="{{ field.errors|yesno:'error, ' }} field">
+                            {{ field.label }}
+                            {{ field }}
+                        </div>
+                    {% endfor %}
+
+                {% else %}
+                    {% for field in form  %}
+                        <div class="field">
+                            {{ field.label }}
+                            {{ field }}
+                        </div>
+                    {% endfor %}
+
+                {% endif %}
+
+
+
+                {% csrf_token %}
+                <button type="submit" class="ui blue button" >Click</button>
+            </form>
+
+        </div>
+
+        <!-- <script>
+            var vm = new Vue({
+              // 下一行就是告诉vue控制id为app的部分
+                el:"#app",
+                // context
+                data:{
+                    // context["article"] = article
+                   showMenu:false,
+                   chozen:'all',
+                   vids:[]
+               },
+               methods:{
+                   getData:function () {
+                       var self = this;
+                       reqwest({
+                           url:'http://127.0.0.1:9000/api/video/',
+                           // 这里请换成自己的端口，一般是8000
+                           type:'json',
+                           success:function (resp) {
+                               self.vids = resp
+                           },
+
+                       })
+                   }
+               },
+               computed:{
+                   filtered:function () {
+                       var self = this
+                       if (self.chozen == 'editors_choice') {
+                           var newList =self.vids.filter(function (vid) {
+                                   return vid.editors_choice == true
+                               })
+                           return newList
+                       } else {
+                           return self.vids
+                       }
+
+                   }
+               },
+               transitions:{
+                   menu:{
+                       enterClass:'bounceInDown',
+                       leaveClass:'bounceOutUp'
+                   }
+               },
+
+               ready:function () {
+                   this.getData()
+               }
+           })
+         </script> -->
+
+    </body>
+
+
+
+</html>

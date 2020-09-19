@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title></title>
+        <link rel="stylesheet" href="{% static 'css/semantic.css' %}" media="screen" title="no title" charset="utf-8">
+        <link href="https://fonts.googleapis.com/css?family=Oswald|Raleway" rel="stylesheet">
+
+
+        <style type="text/css">
+            .ui.segment.container {
+                width:700px;
+            }
+
+            p {
+                font-family: 'Raleway', sans-serif;
+                font-size:18px;
+            }
+
+            body {
+                background:url({% static 'images/star_banner.jpg'%});
+                background-size:cover;
+                background-repeat:no-repeat;
+                background-attachment:fixed
+            }
+
+        </style>
+    </head>
+    <body>
+        <div class="ui image">
+            <img src="" alt="" />
+        </div>
+        <div class="ui  segment padded container" >
+            <h1 class="ui header" style="font-family:'Oswald', sans-serif;font-size:40px">
+                Indonesia pointed at Christmas
+            </h1>
+            <p>
+                his is how it happens:
+                The most sensible alternative to a life of unbearable hardship is to take a chance on a rubber dinghy in Indonesia pointed at Christmas Island, which is part of Australia. If a refugee survives, this person is not praised for valor but rather ejected 4,000 miles away to another island. Nauru Regional Processing Center. Processing sounds temporary, and it is, in the same way purgatory is temporary. Asylum seekers have been known to wait five years for intercession in the form of a “refugee status determination,” or RSD.
+                The agony of waiting is what caused the July 2013 riot. RSDs that were promised were not delivered, and asylum seekers protested. They threw rocks at police and lit fire to buildings. No one was hurt, but the fires caused $60 million in damage. It was probably the most power they’d ever wielded. Nauruan police arrested 153 people around 9:30 p.m. and charged them with rioting. But nothing changed. If anything, the detainees were more forlorn than ever.
+                Depression was becoming rampant. The older children noticed it, and the little ones, too, though they couldn’t quite understand. Something was wrong. Happiness should be easy at that age. But not in Nauru.
+                Once, a teacher noticed her student searching the ground for something while waiting for the bus to take him home from school. He was a nice little boy. He’d been given something that morning, a sticker. What a thing. But now he’d lost it, and he anxiously combed the dirt and gravel. “Leave it,” the teacher said. “You can find it later.” The boy said nothing. He just slumped into a pile and sobbed.
+                When the protests of Sept. 30 amounted to nothing, it was as though a reservoir of grief broke through the last levee, and hopelessness flooded the little camp.
+                All around were thoughts of suicide. One asylum seeker, Yusuf, told his case manager he thought the mood in the camp was worse than ever. A week earlier, the Australian government had taken the unprecedented step of paying Cambodia (as it paid Nauru) to resettle refugees there. The head of the U.N. refugee agency called it “a worrying departure from international norms” because Australia was essentially paying a poor, unsuitable country to take over its own moral and legal obligations. But Cambodia wanted the money, Australia didn’t want the refugees and to this day the plan is still in place.
+            </p>
+        </div>
+
+        <!-- Comments&Form's here -->
+        <div class="ui segment container" style="width:700px;">
+            <h3 class="ui header" style="font-family:'Oswald', sans-serif;">Comments</h3>
+            <div class="ui comments">
+                {% for comment in comment_list %}
+                    <div class="comment">
+                        <div class="avatar">
+                            <img src="http://semantic-ui.com/images/avatar/small/matt.jpg" alt="" />
+                        </div>
+                        <div class="content">
+                            <a href="#" class="author">{{ comment.name }}</a>
+                            <div class="metadata">
+                                <div class="date">2 days ago</div>
+                            </div>
+                            <p class="text" style="font-family: 'Raleway', sans-serif;">
+                                {{ comment.comment }}
+                            </p>
+                        </div>
+                    </div>
+                {% endfor %}
+
+            </div>
+            <div class="ui divider"></div>
+            <form class="ui error tiny form" method="post">
+                {% if form.errors %}
+                    <div class="ui error message">
+                        {{ form.errors }}
+                    </div>
+
+                    {% for field in form %}
+                        <div class="{{ field.errors|yesno:'error, '}} field">
+                            {{ field.label }}
+                            {{ field }}
+                        </div>
+                    {% endfor %}
+
+                {% else %}
+                    {% for field in form %}
+                        <div class="field">
+                            {{ field.label }}
+                            {{ field }}
+                        </div>
+                    {% endfor %}
+
+                {% endif %}
+
+                {% csrf_token %}
+
+
+
+                <button type="submit" class="ui blue button" >Click</button>
+            </form>
+
+        </div>
+
+    </body>
+</html>
